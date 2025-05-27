@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcades-N-More - We Bring the Arcade to YOU!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(45deg, #000000, #1a1a00, #333300);
+            color: #ffff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 255, 0, 0.03) 2px,
+                rgba(255, 255, 0, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 3px solid #ffff00;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-glow {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 0, 0.2), transparent);
+            animation: headerGlow 4s infinite;
+        }
+
+        @keyframes headerGlow {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .logo {
+            text-align: center;
+            padding: 20px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo h1 {
+            font-size: 3em;
+            color: #ffff00;
+            text-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00;
+            animation: pulse 2s infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .tagline {
+            color: #ffff00;
+            font-size: 1.2em;
+            text-shadow: 0 0 10px #ffff00;
+        }
+
+        nav {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 0;
+            border-bottom: 2px solid #ffff00;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #ffff00, #ffcc00);
+            border: none;
+            padding: 12px 24px;
+            color: black;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(255, 255, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 0, 0.5);
+            background: linear-gradient(45deg, #ffcc00, #ffff00);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(45deg, #000000, #333333);
+            color: #ffff00;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        main {
+            padding: 40px 0;
+            min-height: calc(100vh - 300px);
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page h2 {
+            font-size: 2.5em;
+            color: #ffff00;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px #ffff00;
+        }
+
+        .upload-section {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffff00;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .upload-section h3 {
+            color: #ffff00;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            background: linear-gradient(45deg, #ffff00, #ffcc00);
+            color: black;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.5);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .game-card {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffff00;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 255, 0, 0.3);
+            border-color: #ffff00;
+        }
+
+        .game-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .game-info {
+            padding: 20px;
+        }
+
+        .game-title {
+            color: #ffff00;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #ffff00;
+        }
+
+        .game-description {
+            color: #cccccc;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .delete-btn {
+            background: #ff3333;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            float: right;
+        }
+
+        .delete-btn:hover {
+            background: #ff5555;
+        }
+
+        .about-content {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffff00;
+            border-radius: 10px;
+            padding: 40px;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        .about-content h3 {
+            color: #ffff00;
+            margin: 30px 0 15px 0;
+            font-size: 1.5em;
+            text-shadow: 0 0 10px #ffff00;
+        }
+
+        .highlight {
+            color: #ffff00;
+            font-weight: bold;
+            text-shadow: 0 0 5px #ffff00;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 3px solid #ffff00;
+            text-align: center;
+            padding: 30px 0;
+            color: #ffff00;
+        }
+
+        .footer-content {
+            font-size: 1.1em;
+        }
+
+        .contact-info {
+            margin-top: 15px;
+            color: #ffff00;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .logo h1 {
+                font-size: 2em;
+            }
+
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+
+            .page h2 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <header>
+        <div class="header-glow"></div>
+        <div class="container">
+            <div class="logo">
+                <h1>ARCADES-N-MORE</h1>
+                <div class="tagline">Keeping the Golden Age Alive Since 1993</div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <div class="nav-container">
+                <button class="nav-btn active" onclick="showPage('home')">HOME</button>
+                <button class="nav-btn" onclick="showPage('multi-games')">MULTI-GAMES</button>
+                <button class="nav-btn" onclick="showPage('pinball')">PINBALL MACHINES</button>
+                <button class="nav-btn" onclick="showPage('video-games')">VIDEO GAMES</button>
+                <button class="nav-btn" onclick="showPage('about')">ABOUT US</button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <!-- Home Page -->
+            <div id="home" class="page active">
+                <h2>Welcome to the Ultimate Retro Gaming Experience</h2>
+                <div class="about-content" style="text-align: center;">
+                    <p style="font-size: 1.3em; margin-bottom: 30px;">
+                        Step into a world where <span class="highlight">nostalgia meets craftsmanship</span>. 
+                        For over three decades, we've been the premier destination for authentic arcade experiences.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 40px;">
+                        <div style="padding: 20px; border: 2px solid #ffff00; border-radius: 10px;">
+                            <h3 style="color: #ffff00; margin-bottom: 15px;">Multi-Game Cabinets</h3>
+                            <p>Hundreds of classic games in one beautifully restored cabinet</p>
+                        </div>
+                        <div style="padding: 20px; border: 2px solid #000000; background: rgba(255,255,0,0.1); border-radius: 10px;">
+                            <h3 style="color: #ffff00; margin-bottom: 15px;">Vintage Video Games</h3>
+                            <p>Original working cabinets from gaming's golden era</p>
+                        </div>
+                        <div style="padding: 20px; border: 2px solid #ffff00; border-radius: 10px;">
+                            <h3 style="color: #ffff00; margin-bottom: 15px;">Pinball Machines</h3>
+                            <p>Classic silver ball action from legendary manufacturers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi-Games Page -->
+            <div id="multi-games" class="page">
+                <h2>Multi-Game Cabinets</h2>
+                <div class="upload-section">
+                    <h3>Add New Multi-Game Cabinet</h3>
+                    <div class="file-input-wrapper">
+                        <input type="file" class="file-input" id="multi-games-file" accept="image/*" onchange="handleImageUpload(event, 'multi-games')">
+                        <div class="file-input-button">UPLOAD IMAGE</div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <input type="text" id="multi-games-title" placeholder="Cabinet Name" style="padding: 10px; margin-right: 10px; background: rgba(0,0,0,0.8); border: 1px solid #ffff00; color: #ffff00; border-radius: 5px;">
+                        <input type="text" id="multi-games-desc" placeholder="Description" style="padding: 10px; width: 300px; background: rgba(0,0,0,0.8); border: 1px solid #ffff00; color: #ffff00; border-radius: 5px;">
+                    </div>
+                </div>
+                <div id="multi-games-gallery" class="gallery">
+                    <!-- Sample items -->
+                    <div class="game-card">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23000'/%3E%3Crect x='50' y='50' width='300' height='200' fill='%23333' stroke='%23ff6b35' stroke-width='3'/%3E%3Ctext x='200' y='120' text-anchor='middle' fill='%2300ff00' font-family='monospace' font-size='16'%3E60-IN-1 CLASSIC%3C/text%3E%3Ctext x='200' y='150' text-anchor='middle' fill='%23ff6b35' font-family='monospace' font-size='12'%3EARCADE CABINET%3C/text%3E%3Ccircle cx='150' cy='200' r='15' fill='%2300ff00'/%3E%3Ccircle cx='250' cy='200' r='15' fill='%23ff6b35'/%3E%3C/svg%3E" alt="60-in-1 Classic">
+                        <div class="game-info">
+                            <div class="game-title">60-in-1 Classic Cabinet</div>
+                            <div class="game-description">Features Pac-Man, Galaga, Donkey Kong, and 57 other golden age classics in one beautifully restored cabinet.</div>
+                            <button class="delete-btn" onclick="deleteItem(this)">DELETE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pinball Page -->
+            <div id="pinball" class="page">
+                <h2>Pinball Machines</h2>
+                <div class="upload-section">
+                    <h3>Add New Pinball Machine</h3>
+                    <div class="file-input-wrapper">
+                        <input type="file" class="file-input" id="pinball-file" accept="image/*" onchange="handleImageUpload(event, 'pinball')">
+                        <div class="file-input-button">UPLOAD IMAGE</div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <input type="text" id="pinball-title" placeholder="Machine Name" style="padding: 10px; margin-right: 10px; background: rgba(0,0,0,0.8); border: 1px solid #ffff00; color: #ffff00; border-radius: 5px;">
+                        <input type="text" id="pinball-desc" placeholder="Description" style="padding: 10px; width: 300px; background: rgba(0,0,0,0.8); border: 1px solid #ffff00; color: #ffff00; border-radius: 5px;">
+                    </div>
+                </div>
+                <div id="pinball-gallery" class="gallery">
+                    <!-- Sample items -->
+                    <div class="game-card">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23000'/%3E%3Crect x='30' y='30' width='340' height='240' fill='%23222' stroke='%23ff6b35' stroke-width='3'/%3E%3Ctext x='200' y='80' text-anchor='middle' fill='%2300ff00' font-family='monospace' font-size='18' font-weight='bold'%3EMEDIEVAL MADNESS%3C/text%3E%3Crect x='80' y='120' width='240' height='120' fill='%23333' stroke='%2300ff00' stroke-width='2'/%3E%3Ccircle cx='140' cy='180' r='8' fill='%23ff6b35'/%3E%3Ccircle cx='200' cy='160' r='8' fill='%23ff6b35'/%3E%3Ccircle cx='260' cy='200' r='8' fill='%23ff6b35'/%3E%3C/svg%3E" alt="Medieval Madness">
+                        <div class="game-info">
+                            <div class="game-title">Medieval Madness (1997)</div>
+                            <div class="game-description">Williams' legendary pinball machine featuring castle destruction, multiball madness, and medieval mayhem. Fully restored and tournament ready.</div>
+                            <button class="delete-btn" onclick="deleteItem(this)">DELETE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Games Page -->
+            <div id="video-games" class="page">
+                <h2>Vintage Video Game Cabinets</h2>
+                <div class="upload-section">
+                    <h3>Add New Video Game Cabinet</h3>
+                    <div class="file-input-wrapper">
+                        <input type="file" class="file-input" id="video-games-file" accept="image/*" onchange="handleImageUpload(event, 'video-games')">
+                        <div class="file-input-button">UPLOAD IMAGE</div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <input type="text" id="video-games-title" placeholder="Game Name" style="padding: 10px; margin-right: 10px; background: rgba(0,0,0,0.8); border: 1px solid #ffff00; color: #ffff00; border-radius: 5px;">
+                        <input type="text" id="video-games-desc" placeholder="Description" style="padding: 10px; width: 300px; background: rgba(0,0,0,0.8); border: 1px solid #ffff00; color: #ffff00; border-radius: 5px;">
+                    </div>
+                </div>
+                <div id="video-games-gallery" class="gallery">
+                    <!-- Sample items -->
+                    <div class="game-card">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23000'/%3E%3Crect x='50' y='40' width='300' height='220' fill='%230066cc' stroke='%23ff6b35' stroke-width='3'/%3E%3Ctext x='200' y='70' text-anchor='middle' fill='%23ffff00' font-family='monospace' font-size='20' font-weight='bold'%3EPAC-MAN%3C/text%3E%3Ccircle cx='200' cy='130' r='25' fill='%23ffff00'/%3E%3Cpath d='M 200 105 L 225 130 L 200 155 Z' fill='%230066cc'/%3E%3Ccircle cx='150' cy='180' r='4' fill='%23ffff00'/%3E%3Ccircle cx='170' cy='180' r='4' fill='%23ffff00'/%3E%3Ccircle cx='190' cy='180' r='4' fill='%23ffff00'/%3E%3Ccircle cx='210' cy='180' r='4' fill='%23ffff00'/%3E%3Ccircle cx='230' cy='180' r='4' fill='%23ffff00'/%3E%3Ccircle cx='250' cy='180' r='4' fill='%23ffff00'/%3E%3C/svg%3E" alt="Pac-Man">
+                        <div class="game-info">
+                            <div class="game-title">Pac-Man (1980)</div>
+                            <div class="game-description">The original yellow icon! Fully restored Midway cabinet with original CRT monitor and authentic coin door. A true piece of gaming history.</div>
+                            <button class="delete-btn" onclick="deleteItem(this)">DELETE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Page -->
+            <div id="about" class="page">
+                <h2>About Arcades-N-More</h2>
+                <div class="about-content">
+                    <p>
+                        Welcome to <span class="highlight">Arcades-N-More</span>, where the golden age of gaming lives on! 
+                        Since <span class="highlight">1993</span>, we've been dedicated to preserving and sharing the magic of classic arcade gaming.
+                    </p>
+
+                    <h3>Our Story</h3>
+                    <p>
+                        What started as a passion project in a small garage has grown into the region's premier destination for authentic arcade experiences. 
+                        Our founder, a lifelong gaming enthusiast, got hooked on video games by playing Defender until his fingers were numb.  He thought 
+                        "Wouldn't it would be cool to have a classic like Galaga, Donkey Kong, Asteroids, or Ms. Pac-man in your game room or basement?"
+                        "What about Pinball Classics like Pinbot, High Speed, Star Trek or Jurassic Park?"
+                        That passion evolved into a mission: to ensure that these incredible games and the craftsmanship behind them are never forgotten. 
+                        We have over 100 games in stock. We have a Tech with over 30 years’ experience go through every inch of every game we sell. We want 100% satisfaction from all of our customers. 
+                        
+                    </p>
+
+                    <h3>What We Offer</h3>
+                    <p>
+                        We specialize in three main categories of arcade entertainment:
+                    </p>
+                    <p>
+                        <span class="highlight">Multi-Game Cabinets:</span> Our custom-built cabinets feature 60 classic games in beautifully restored housings. 
+                        Perfect for home game rooms, these cabinets bring the entire arcade experience to your space.
+                    </p>
+                    <p>
+                        <span class="highlight">Vintage Video Game Cabinets:</span> Original arcade machines from the 1970s, 80s, and 90s, completely restored to their former glory. 
+                        Each cabinet features authentic components and original artwork.
+                    </p>
+                    <p>
+                        <span class="highlight">Pinball Machines:</span> From electromechanical classics to modern digital displays, our pinball collection spans decades of silver ball wizardry. 
+                        Each machine is meticulously maintained and tournament-ready.
+                    </p>
+
+                    <h3>Our Commitment</h3>
+                    <p>
+                        Every machine that leaves our shop represents hours of careful restoration work. We use original parts whenever possible, 
+                        and when replacements are necessary, we source only the highest quality components. Our goal isn't just to make these machines work – 
+                        it's to make them feel exactly as they did during gaming's golden age.
+                    </p>
+
+                    <h3>More Than Just Games</h3>
+                    <p>
+                        We're not just selling arcade machines; we're preserving cultural history. Each cabinet represents a piece of the technological and 
+                        artistic evolution that shaped modern gaming.  When you purchase from Arcades-N-More, you're not just getting entertainment – 
+                        you're becoming a curator of gaming heritage.
+                    </p>
+
+                    <p style="margin-top: 30px; font-size: 1.2em; text-align: center;">
+                        <span class="highlight">Ready to bring the arcade home? Browse our current inventory and discover your next gaming obsession!</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>© 2025 Arcades-N-More - Preserving Gaming History Since 1993</div>
+                <div class="contact-info">
+                    📧 info@arcadesandmore.com | 📞 (314) 838-1210 | 📍 6 Patterson Plaza, Florissant MO, 63031
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Store all uploaded items in memory
+        let inventoryData = {
+            'multi-games': [],
+            'pinball': [],
+            'video-games': []
+        };
+
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update navigation buttons
+            const navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function handleImageUpload(event, category) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const titleInput = document.getElementById(`${category}-title`);
+            const descInput = document.getElementById(`${category}-desc`);
+            
+            const title = titleInput.value.trim() || 'Untitled Item';
+            const description = descInput.value.trim() || 'No description provided.';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const item = {
+                    id: Date.now(),
+                    title: title,
+                    description: description,
+                    imageUrl: e.target.result
+                };
+
+                // Add to inventory
+                inventoryData[category].push(item);
+                
+                // Add to gallery
+                addItemToGallery(category, item);
+                
+                // Clear inputs
+                titleInput.value = '';
+                descInput.value = '';
+                event.target.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function addItemToGallery(category, item) {
+            const gallery = document.getElementById(`${category}-gallery`);
+            
+            const gameCard = document.createElement('div');
+            gameCard.className = 'game-card';
+            gameCard.dataset.itemId = item.id;
+            
+            gameCard.innerHTML = `
+                <img src="${item.imageUrl}" alt="${item.title}">
+                <div class="game-info">
+                    <div class="game-title">${item.title}</div>
+                    <div class="game-description">${item.description}</div>
+                    <button class="delete-btn" onclick="deleteItem(this)">DELETE</button>
+                </div>
+            `;
+            
+            gallery.appendChild(gameCard);
+        }
+
+        function deleteItem(button) {
+            const gameCard = button.closest('.game-card');
+            const itemId = parseInt(gameCard.dataset.itemId);
+            
+            // Remove from DOM
+            gameCard.remove();
+            
+            // Remove from inventory data if it has an ID (uploaded items)
+            if (itemId) {
+                for (const category in inventoryData) {
+                    inventoryData[category] = inventoryData[category].filter(item => item.id !== itemId);
+                }
+            }
+        }
+
+        // Add some visual flair
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to game cards
+            const gameCards = document.querySelectorAll('.game-card');
+            gameCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
